@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login - SIJaNi</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #4f46e5, #3b82f6);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: #fff;
+    }
+
+    .login-container {
+      background-color: rgba(255, 255, 255, 0.1);
+      padding: 2rem;
+      border-radius: 15px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .login-container h2 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.2rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 0.7rem;
+      border: none;
+      border-radius: 8px;
+      background-color: rgba(255, 255, 255, 0.8);
+      color: #000;
+      font-size: 1rem;
+    }
+
+    .form-group input::placeholder {
+      color: #666;
+    }
+
+    .btn-login {
+      width: 100%;
+      padding: 0.8rem;
+      border: none;
+      border-radius: 8px;
+      background-color: #10b981;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .btn-login:hover {
+      background-color: #059669;
+    }
+
+    .footer {
+      margin-top: 2rem;
+      text-align: center;
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h2>Masuk ke SIJaNi</h2>
+
+    <div class="form-group">
+      <label for="username">Nama Pengguna</label>
+      <input type="text" id="username" placeholder="Contoh: Udin Petugas" />
+    </div>
+
+    <div class="form-group">
+      <label for="role">Peran</label>
+      <select id="role">
+        <option value="">-- Pilih Peran --</option>
+        <option value="Admin">Admin</option>
+        <option value="Petugas">Petugas</option>
+      </select>
+    </div>
+
+    <button class="btn-login" onclick="login()">Masuk</button>
+
+    <div class="footer">© 2025 SIJaNi by Udi</div>
+  </div>
+
+  <script>
+    function login() {
+      const username = document.getElementById('username').value.trim();
+      const role = document.getElementById('role').value;
+
+      if (!username || !role) {
+        alert('Harap isi nama dan pilih peran.');
+        return;
+      }
+
+      localStorage.setItem('isLoggedIn', 'true');
+      localStorage.setItem('userData', JSON.stringify({ name: username, role }));
+
+      window.location.href = 'index.html';
+    }
+  </script>
+</body>
+</html>
