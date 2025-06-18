@@ -3,8 +3,7 @@ class SIJaNiApp {
   constructor() {
     this.initLogin();
     this.initDashboard();
-    this.initDB();
-    this.registerSW();
+        this.registerSW();
   }
 
   initLogin() {
