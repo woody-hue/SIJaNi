@@ -1,451 +1,197 @@
-// script-dashboard.js
-document.addEventListener('DOMContentLoaded', function() {
-    // Check login status first
-    checkLoginStatus();
-    
-    // Initialize dashboard
-    initializeDashboard();
-    
-    // Register service worker
-    registerServiceWorker();
-});
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SI-JaNi - Dashboard</title>
+  <link rel="stylesheet" href="style-dashboard.css">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/icon-192x192.png">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" defer></script>
+  <script src="script-dashboard.js" defer></script>
+</head>
+<body>
+  <header>
+    <div class="header-title">
+      <h1>SI-JaNi</h1>
+      <h2>Sistem Informasi Jadwal Nikah</h2>
+    </div>
+    <div class="user-info">
+      <span id="loggedInUser"></span>
+      <button id="logoutBtn">Logout</button>
+    </div>
+  </header>
 
-// Fungsi untuk inisialisasi dashboard
-function initializeDashboard() {
-    // Set user info
-    displayUserInfo();
-    
-    // Setup event listeners
-    setupEventListeners();
-    
-    // Load initial data
-    loadScheduleData();
-    updateCalendar();
-    
-    // Setup logout button
-    document.getElementById('logoutBtn').addEventListener('click', logout);
-}
+  <main>
+    <!-- Controls Section -->
+    <section class="controls">
+      <button id="addScheduleBtn" class="btn-primary">
+        <i class="icon">+</i> Tambah Jadwal
+      </button>
+      
+      <div class="month-navigation">
+        <button id="prevMonthBtn" class="btn-icon">&lt;</button>
+        <h3 id="currentMonthYear">Bulan Tahun</h3>
+        <button id="nextMonthBtn" class="btn-icon">&gt;</button>
+      </div>
+      
+      <div class="filter-group">
+        <label for="locationFilter">Filter Lokasi:</label>
+        <select id="locationFilter" class="form-control">
+          <option value="all">Semua Lokasi</option>
+          <option value="KUA">Kantor KUA</option>
+          <option value="Lapangan">Lapangan</option>
+          <option value="Pendopo">Pendopo Kabupaten</option>
+        </select>
+      </div>
+    </section>
 
-// Fungsi untuk menampilkan info user
-function displayUserInfo() {
-    const userData = JSON.parse(localStorage.getItem('userData'));
-    if (userData) {
-        document.getElementById('loggedInUser').textContent = 
-            `${userData.name} (${userData.role})`;
-    }
-}
+    <!-- Calendar Section -->
+    <section class="calendar-section">
+      <div id="calendar">
+        <div class="calendar-header">
+          <div>Minggu</div>
+          <div>Senin</div>
+          <div>Selasa</div>
+          <div>Rabu</div>
+          <div>Kamis</div>
+          <div>Jumat</div>
+          <div>Sabtu</div>
+        </div>
+        <div class="calendar-body" id="calendarBody"></div>
+      </div>
+    </section>
 
-// Fungsi untuk setup event listeners
-function setupEventListeners() {
-    // Modal controls
-    const modal = document.getElementById('scheduleModal');
-    const addBtn = document.getElementById('addScheduleBtn');
-    const closeBtn = document.querySelector('.close');
-    
-    addBtn.addEventListener('click', () => openModal('Tambah Jadwal Nikah'));
-    closeBtn.addEventListener('click', () => modal.style.display = 'none');
-    
-    window.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            modal.style.display = 'none';
-        }
-    });
-    
-    // Form submission
-    document.getElementById('scheduleForm').addEventListener('submit', handleFormSubmit);
-    
-    // Month navigation
-    document.getElementById('prevMonthBtn').addEventListener('click', () => {
-        currentMonth--;
-        if (currentMonth < 0) {
-            currentMonth = 11;
-            currentYear--;
-        }
-        updateCalendar();
-    });
-    
-    document.getElementById('nextMonthBtn').addEventListener('click', () => {
-        currentMonth++;
-        if (currentMonth > 11) {
-            currentMonth = 0;
-            currentYear++;
-        }
-        updateCalendar();
-    });
-    
-    // Location filter
-    document.getElementById('locationFilter').addEventListener('change', loadScheduleData);
-    
-    // Download buttons
-    document.getElementById('downloadPdfBtn').addEventListener('click', downloadAsPdf);
-    document.getElementById('downloadCsvBtn').addEventListener('click', downloadAsCsv);
-    
-    // Location selection
-    document.getElementById('location').addEventListener('change', function() {
-        document.getElementById('locationDetailGroup').style.display = 
-            this.value === 'Lapangan' ? 'block' : 'none';
-    });
-}
+    <!-- Schedule List Section -->
+    <section class="schedule-section">
+      <div class="section-header">
+        <h3>Daftar Jadwal Nikah</h3>
+        <div class="action-buttons">
+          <button id="downloadPdfBtn" class="btn-secondary">
+            <i class="icon">📕</i> PDF
+          </button>
+          <button id="downloadCsvBtn" class="btn-secondary">
+            <i class="icon">📄</i> CSV
+          </button>
+        </div>
+      </div>
+      
+      <div class="table-responsive">
+        <table id="scheduleTable">
+          <thead>
+            <tr>
+              <th>No.</th>
+              <th>Tanggal</th>
+              <th>Waktu</th>
+              <th>Nama Pria</th>
+              <th>Nama Wanita</th>
+              <th>Kontak</th>
+              <th>Lokasi</th>
+              <th>Status Berkas</th>
+              <th>Keterangan</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="scheduleTableBody">
+            <!-- Data akan diisi oleh JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
 
-// Variabel global untuk data jadwal
-let scheduleData = [];
-let currentMonth = new Date().getMonth();
-let currentYear = new Date().getFullYear();
-
-// Fungsi untuk memuat data jadwal
-function loadScheduleData() {
-    // Simulasi data - dalam implementasi nyata, ini bisa dari API atau localStorage
-    scheduleData = JSON.parse(localStorage.getItem('weddingSchedules')) || [
-        {
-            id: 1,
-            groomName: 'John Doe',
-            brideName: 'Jane Smith',
-            groomPhone: '08123456789',
-            bridePhone: '08987654321',
-            date: '2023-11-15',
-            time: '10:00',
-            location: 'KUA',
-            locationDetail: '',
-            documentStatus: 'Lengkap',
-            notes: 'Test data'
-        }
-    ];
-    
-    // Filter data berdasarkan lokasi
-    const locationFilter = document.getElementById('locationFilter').value;
-    let filteredData = scheduleData;
-    
-    if (locationFilter !== 'all') {
-        filteredData = scheduleData.filter(item => item.location === locationFilter);
-    }
-    
-    // Filter data bulan ini
-    const firstDay = new Date(currentYear, currentMonth, 1);
-    const lastDay = new Date(currentYear, currentMonth + 1, 0);
-    
-    filteredData = filteredData.filter(item => {
-        const itemDate = new Date(item.date);
-        return itemDate >= firstDay && itemDate <= lastDay;
-    });
-    
-    // Render table
-    renderScheduleTable(filteredData);
-}
-
-// Fungsi untuk render tabel jadwal
-function renderScheduleTable(data) {
-    const tbody = document.getElementById('scheduleTableBody');
-    tbody.innerHTML = '';
-    
-    data.forEach(item => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${formatDate(item.date)}</td>
-            <td>${item.time}</td>
-            <td>${item.groomName}</td>
-            <td>${item.brideName}</td>
-            <td>${item.groomPhone}</td>
-            <td>${item.location}${item.locationDetail ? ' - ' + item.locationDetail : ''}</td>
-            <td>${item.documentStatus}</td>
-            <td>${item.notes || '-'}</td>
-            <td>
-                <button class="edit-btn" data-id="${item.id}">Edit</button>
-                <button class="delete-btn" data-id="${item.id}">Hapus</button>
-            </td>
-        `;
-        tbody.appendChild(row);
-    });
-    
-    // Add event listeners to buttons
-    document.querySelectorAll('.edit-btn').forEach(btn => {
-        btn.addEventListener('click', () => editSchedule(btn.dataset.id));
-    });
-    
-    document.querySelectorAll('.delete-btn').forEach(btn => {
-        btn.addEventListener('click', () => deleteSchedule(btn.dataset.id));
-    });
-}
-
-// Fungsi untuk update kalender
-function updateCalendar() {
-    const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni",
-                       "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-    
-    document.getElementById('currentMonthYear').textContent = 
-        `${monthNames[currentMonth]} ${currentYear}`;
-    
-    const firstDay = new Date(currentYear, currentMonth, 1);
-    const lastDay = new Date(currentYear, currentMonth + 1, 0);
-    const daysInMonth = lastDay.getDate();
-    const startingDay = firstDay.getDay();
-    
-    const calendarBody = document.getElementById('calendarBody');
-    calendarBody.innerHTML = '';
-    
-    // Add empty cells for days before the first day of the month
-    for (let i = 0; i < startingDay; i++) {
-        calendarBody.appendChild(document.createElement('div'));
-    }
-    
-    // Add cells for each day of the month
-    for (let day = 1; day <= daysInMonth; day++) {
-        const cell = document.createElement('div');
-        cell.textContent = day;
+  <!-- Schedule Modal -->
+  <div id="scheduleModal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h3 id="modalTitle">Tambah Jadwal Nikah</h3>
+      
+      <form id="scheduleForm">
+        <input type="hidden" id="scheduleId">
         
-        // Check if this date has any schedules
-        const currentDate = new Date(currentYear, currentMonth, day);
-        const formattedDate = formatDateForComparison(currentDate);
+        <div class="form-row">
+          <div class="form-group">
+            <label for="groomName">Nama Calon Pria</label>
+            <input type="text" id="groomName" required>
+          </div>
+          <div class="form-group">
+            <label for="brideName">Nama Calon Wanita</label>
+            <input type="text" id="brideName" required>
+          </div>
+        </div>
         
-        const hasSchedule = scheduleData.some(item => 
-            formatDateForComparison(new Date(item.date)) === formattedDate
-        );
+        <div class="form-row">
+          <div class="form-group">
+            <label for="groomPhone">No. HP Pria</label>
+            <input type="tel" id="groomPhone" required>
+          </div>
+          <div class="form-group">
+            <label for="bridePhone">No. HP Wanita</label>
+            <input type="tel" id="bridePhone" required>
+          </div>
+        </div>
         
-        if (hasSchedule) {
-            cell.classList.add('has-schedule');
-            cell.addEventListener('click', () => {
-                const filtered = scheduleData.filter(item => 
-                    formatDateForComparison(new Date(item.date)) === formattedDate
-                );
-                renderScheduleTable(filtered);
-            });
-        }
+        <div class="form-row">
+          <div class="form-group">
+            <label for="weddingDate">Tanggal Nikah</label>
+            <input type="date" id="weddingDate" required>
+          </div>
+          <div class="form-group">
+            <label for="weddingTime">Waktu Nikah</label>
+            <input type="time" id="weddingTime" required>
+          </div>
+        </div>
         
-        calendarBody.appendChild(cell);
-    }
-}
-
-// Fungsi untuk membuka modal
-function openModal(title, data = null) {
-    const modal = document.getElementById('scheduleModal');
-    document.getElementById('modalTitle').textContent = title;
-    
-    const form = document.getElementById('scheduleForm');
-    const deleteBtn = document.getElementById('deleteBtn');
-    
-    if (data) {
-        // Edit mode
-        document.getElementById('scheduleId').value = data.id;
-        document.getElementById('groomName').value = data.groomName;
-        document.getElementById('brideName').value = data.brideName;
-        document.getElementById('groomPhone').value = data.groomPhone;
-        document.getElementById('bridePhone').value = data.bridePhone;
-        document.getElementById('weddingDate').value = data.date;
-        document.getElementById('weddingTime').value = data.time;
-        document.getElementById('location').value = data.location;
-        document.getElementById('locationDetail').value = data.locationDetail || '';
-        document.getElementById('documentStatus').value = data.documentStatus;
-        document.getElementById('notes').value = data.notes || '';
+        <div class="form-row">
+          <div class="form-group">
+            <label for="location">Lokasi Nikah</label>
+            <select id="location" required>
+              <option value="KUA">Kantor KUA</option>
+              <option value="Lapangan">Lapangan</option>
+              <option value="Pendopo">Pendopo Kabupaten</option>
+            </select>
+          </div>
+          <div class="form-group" id="locationDetailGroup" style="display:none;">
+            <label for="locationDetail">Detail Lokasi</label>
+            <input type="text" id="locationDetail">
+          </div>
+        </div>
         
-        deleteBtn.style.display = 'inline-block';
-        deleteBtn.onclick = () => deleteSchedule(data.id);
-    } else {
-        // Add mode
-        form.reset();
-        document.getElementById('scheduleId').value = '';
-        deleteBtn.style.display = 'none';
+        <div class="form-row">
+          <div class="form-group">
+            <label for="documentStatus">Status Berkas</label>
+            <select id="documentStatus" required>
+              <option value="Lengkap">Lengkap</option>
+              <option value="Kurang">Kurang</option>
+              <option value="Proses">Dalam Proses</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="penghulu">Nama Penghulu</label>
+            <input type="text" id="penghulu">
+          </div>
+        </div>
         
-        // Set default date to today
-        document.getElementById('weddingDate').valueAsDate = new Date();
-    }
-    
-    modal.style.display = 'block';
-}
-
-// Fungsi untuk handle form submission
-function handleFormSubmit(e) {
-    e.preventDefault();
-    
-    const formData = {
-        id: document.getElementById('scheduleId').value || Date.now(),
-        groomName: document.getElementById('groomName').value,
-        brideName: document.getElementById('brideName').value,
-        groomPhone: document.getElementById('groomPhone').value,
-        bridePhone: document.getElementById('bridePhone').value,
-        date: document.getElementById('weddingDate').value,
-        time: document.getElementById('weddingTime').value,
-        location: document.getElementById('location').value,
-        locationDetail: document.getElementById('location').value === 'Lapangan' 
-            ? document.getElementById('locationDetail').value 
-            : '',
-        documentStatus: document.getElementById('documentStatus').value,
-        notes: document.getElementById('notes').value
-    };
-    
-    // Validasi data
-    if (!formData.groomName || !formData.brideName || !formData.date || !formData.time) {
-        showNotification('Error', { body: 'Harap isi semua field yang diperlukan', type: 'error' });
-        return;
-    }
-    
-    // Simpan data
-    let schedules = JSON.parse(localStorage.getItem('weddingSchedules')) || [];
-    
-    if (document.getElementById('scheduleId').value) {
-        // Update existing
-        schedules = schedules.map(item => 
-            item.id == formData.id ? formData : item
-        );
-    } else {
-        // Add new
-        schedules.push(formData);
-    }
-    
-    localStorage.setItem('weddingSchedules', JSON.stringify(schedules));
-    
-    // Update UI
-    loadScheduleData();
-    updateCalendar();
-    
-    // Close modal
-    document.getElementById('scheduleModal').style.display = 'none';
-    
-    // Show success message
-    showNotification('Sukses', { 
-        body: `Jadwal nikah ${formData.groomName} & ${formData.brideName} berhasil disimpan`, 
-        type: 'success' 
-    });
-}
-
-// Fungsi untuk edit jadwal
-function editSchedule(id) {
-    const schedule = scheduleData.find(item => item.id == id);
-    if (schedule) {
-        openModal('Edit Jadwal Nikah', schedule);
-    }
-}
-
-// Fungsi untuk hapus jadwal
-function deleteSchedule(id) {
-    if (confirm('Apakah Anda yakin ingin menghapus jadwal ini?')) {
-        let schedules = JSON.parse(localStorage.getItem('weddingSchedules')) || [];
-        schedules = schedules.filter(item => item.id != id);
-        localStorage.setItem('weddingSchedules', JSON.stringify(schedules));
+        <div class="form-group">
+          <label for="notes">Keterangan Tambahan</label>
+          <textarea id="notes" rows="3"></textarea>
+        </div>
         
-        loadScheduleData();
-        updateCalendar();
-        
-        showNotification('Sukses', { body: 'Jadwal berhasil dihapus', type: 'success' });
-        document.getElementById('scheduleModal').style.display = 'none';
-    }
-}
+        <div class="form-actions">
+          <button type="submit" class="btn-primary">Simpan Jadwal</button>
+          <button type="button" id="deleteBtn" class="btn-danger">Hapus Jadwal</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
-// Fungsi untuk download PDF
-function downloadAsPdf() {
-    const element = document.getElementById('scheduleTable');
-    const opt = {
-        margin: 10,
-        filename: `jadwal-nikah-${currentMonth+1}-${currentYear}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
-    };
-    
-    html2pdf().from(element).set(opt).save();
-}
+  <footer>
+    <p>Dikembangkan oleh KUA Kecamatan - &copy; <span id="currentYear"></span></p>
+  </footer>
 
-// Fungsi untuk download CSV
-function downloadAsCsv() {
-    const rows = [];
-    const headers = [
-        'Tanggal', 'Waktu', 'Pria', 'Wanita', 'HP', 
-        'Lokasi', 'Status Berkas', 'Keterangan'
-    ];
-    
-    rows.push(headers.join(','));
-    
-    scheduleData.forEach(item => {
-        const row = [
-            formatDate(item.date),
-            item.time,
-            `"${item.groomName}"`,
-            `"${item.brideName}"`,
-            item.groomPhone,
-            `"${item.location}${item.locationDetail ? ' - ' + item.locationDetail : ''}"`,
-            item.documentStatus,
-            `"${item.notes || ''}"`
-        ];
-        rows.push(row.join(','));
-    });
-    
-    const csvContent = rows.join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', `jadwal-nikah-${currentMonth+1}-${currentYear}.csv`);
-    link.style.visibility = 'hidden';
-    
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-}
-
-// Fungsi untuk logout
-function logout() {
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('userData');
-    window.location.href = 'login.html';
-}
-
-// Fungsi utilitas untuk format tanggal
-function formatDate(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('id-ID', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric'
-    }).replace(/\//g, '-');
-}
-
-function formatDateForComparison(date) {
-    return date.toISOString().split('T')[0];
-}
-
-// Fungsi untuk mengecek status login (dari script sebelumnya)
-function checkLoginStatus() {
-    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-    if (!isLoggedIn) {
-        window.location.href = 'login.html';
-    }
-}
-
-// Fungsi untuk registrasi Service Worker (dari script sebelumnya)
-function registerServiceWorker() {
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js')
-            .then(registration => {
-                console.log('ServiceWorker registered');
-                
-                registration.addEventListener('updatefound', () => {
-                    const newWorker = registration.installing;
-                    newWorker.addEventListener('statechange', () => {
-                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                            showUpdateNotification();
-                        }
-                    });
-                });
-            })
-            .catch(err => console.log('ServiceWorker registration failed:', err));
-
-        navigator.serviceWorker.addEventListener('controllerchange', () => {
-            window.location.reload();
-        });
-    }
-}
-
-// Fungsi notifikasi (dari script sebelumnya)
-function showNotification(title, options = {}) {
-    if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification(title, options);
-    } else {
-        // Fallback untuk browser yang tidak mendukung notifikasi
-        alert(`${title}: ${options.body}`);
-    }
-}
-
-function showUpdateNotification() {
-    if (confirm('Versi baru tersedia! Muat ulang sekarang untuk mendapatkan fitur terbaru?')) {
-        window.location.reload();
-    }
-}
+  <script>
+    // Set current year in footer
+    document.getElementById('currentYear').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
