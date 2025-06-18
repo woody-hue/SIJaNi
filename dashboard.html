@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>SI-JaNi - Dashboard</title>
-  <link rel="stylesheet" href="css/style-dashboard.css">
-  <link rel="manifest" href="manifest.json">
-  <link rel="icon" href="icons/icon-192x192.png">
+  <link rel="stylesheet" href="css/style-dashboard.css" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icons/icon-192x192.png" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" defer></script>
   <script src="js/script-dashboard.js" defer></script>
 </head>
@@ -23,30 +23,29 @@
   </header>
 
   <main>
-    <!-- Controls Section -->
+    <!-- Controls -->
     <section class="controls">
       <button id="addScheduleBtn" class="btn-primary">
         <i class="icon">+</i> Tambah Jadwal
       </button>
-      
+
       <div class="month-navigation">
         <button id="prevMonthBtn" class="btn-icon">&lt;</button>
         <h3 id="currentMonthYear">Bulan Tahun</h3>
         <button id="nextMonthBtn" class="btn-icon">&gt;</button>
       </div>
-      
+
       <div class="filter-group">
         <label for="locationFilter">Filter Lokasi:</label>
         <select id="locationFilter" class="form-control">
           <option value="all">Semua Lokasi</option>
           <option value="KUA">Kantor KUA</option>
           <option value="Lapangan">Lapangan</option>
-         
         </select>
       </div>
     </section>
 
-    <!-- Calendar Section -->
+    <!-- Calendar -->
     <section class="calendar-section">
       <div id="calendar">
         <div class="calendar-header">
@@ -62,20 +61,16 @@
       </div>
     </section>
 
-    <!-- Schedule List Section -->
+    <!-- Schedule Table -->
     <section class="schedule-section">
       <div class="section-header">
         <h3>Daftar Jadwal Nikah</h3>
         <div class="action-buttons">
-          <button id="downloadPdfBtn" class="btn-secondary">
-            <i class="icon">📕</i> PDF
-          </button>
-          <button id="downloadCsvBtn" class="btn-secondary">
-            <i class="icon">📄</i> CSV
-          </button>
+          <button id="downloadPdfBtn" class="btn-secondary">📕 PDF</button>
+          <button id="downloadCsvBtn" class="btn-secondary">📄 CSV</button>
         </div>
       </div>
-      
+
       <div class="table-responsive">
         <table id="scheduleTable">
           <thead>
@@ -93,70 +88,68 @@
             </tr>
           </thead>
           <tbody id="scheduleTableBody">
-            <!-- Data akan diisi oleh JavaScript -->
+            <!-- Diisi otomatis oleh JavaScript -->
           </tbody>
         </table>
       </div>
     </section>
   </main>
 
-  <!-- Schedule Modal -->
+  <!-- Modal Tambah/Edit Jadwal -->
   <div id="scheduleModal" class="modal">
     <div class="modal-content">
       <span class="close">&times;</span>
       <h3 id="modalTitle">Tambah Jadwal Nikah</h3>
-      
       <form id="scheduleForm">
-        <input type="hidden" id="scheduleId">
-        
+        <input type="hidden" id="scheduleId" />
+
         <div class="form-row">
           <div class="form-group">
             <label for="groomName">Nama Calon Pria</label>
-            <input type="text" id="groomName" required>
+            <input type="text" id="groomName" required />
           </div>
           <div class="form-group">
             <label for="brideName">Nama Calon Wanita</label>
-            <input type="text" id="brideName" required>
+            <input type="text" id="brideName" required />
           </div>
         </div>
-        
+
         <div class="form-row">
           <div class="form-group">
             <label for="groomPhone">No. HP Pria</label>
-            <input type="tel" id="groomPhone" required>
+            <input type="tel" id="groomPhone" required />
           </div>
           <div class="form-group">
             <label for="bridePhone">No. HP Wanita</label>
-            <input type="tel" id="bridePhone" required>
+            <input type="tel" id="bridePhone" required />
           </div>
         </div>
-        
+
         <div class="form-row">
           <div class="form-group">
             <label for="weddingDate">Tanggal Nikah</label>
-            <input type="date" id="weddingDate" required>
+            <input type="date" id="weddingDate" required />
           </div>
           <div class="form-group">
             <label for="weddingTime">Waktu Nikah</label>
-            <input type="time" id="weddingTime" required>
+            <input type="time" id="weddingTime" required />
           </div>
         </div>
-        
+
         <div class="form-row">
           <div class="form-group">
             <label for="location">Lokasi Nikah</label>
             <select id="location" required>
               <option value="KUA">Kantor KUA</option>
               <option value="Lapangan">Lapangan</option>
-             
             </select>
           </div>
-          <div class="form-group" id="locationDetailGroup" style="display:none;">
+          <div class="form-group" id="locationDetailGroup" style="display: none;">
             <label for="locationDetail">Detail Lokasi</label>
-            <input type="text" id="locationDetail">
+            <input type="text" id="locationDetail" />
           </div>
         </div>
-        
+
         <div class="form-row">
           <div class="form-group">
             <label for="documentStatus">Status Berkas</label>
@@ -165,12 +158,13 @@
               <option value="Kurang">Kurang</option>
               <option value="Proses">Dalam Proses</option>
             </select>
-                 
-        <div class="form-group">
-          <label for="notes">Keterangan Tambahan</label>
-          <textarea id="notes" rows="3"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="notes">Keterangan Tambahan</label>
+            <textarea id="notes" rows="3"></textarea>
+          </div>
         </div>
-        
+
         <div class="form-actions">
           <button type="submit" class="btn-primary">Simpan Jadwal</button>
           <button type="button" id="deleteBtn" class="btn-danger">Hapus Jadwal</button>
@@ -184,7 +178,7 @@
   </footer>
 
   <script>
-    // Set current year in footer
+    // Isi tahun saat ini secara otomatis di footer
     document.getElementById('currentYear').textContent = new Date().getFullYear();
   </script>
 </body>
