@@ -4,11 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SI-JaNi - Dashboard</title>
-  <link rel="stylesheet" href="style-dashboard.css">
+  <link rel="stylesheet" href="css/style-dashboard.css">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icons/icon-192x192.png">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" defer></script>
-  <script src="script-dashboard.js" defer></script>
+  <script src="js/script-dashboard.js" defer></script>
 </head>
 <body>
   <header>
@@ -41,7 +41,7 @@
           <option value="all">Semua Lokasi</option>
           <option value="KUA">Kantor KUA</option>
           <option value="Lapangan">Lapangan</option>
-          <option value="Pendopo">Pendopo Kabupaten</option>
+         
         </select>
       </div>
     </section>
@@ -148,7 +148,7 @@
             <select id="location" required>
               <option value="KUA">Kantor KUA</option>
               <option value="Lapangan">Lapangan</option>
-              <option value="Pendopo">Pendopo Kabupaten</option>
+             
             </select>
           </div>
           <div class="form-group" id="locationDetailGroup" style="display:none;">
@@ -165,13 +165,7 @@
               <option value="Kurang">Kurang</option>
               <option value="Proses">Dalam Proses</option>
             </select>
-          </div>
-          <div class="form-group">
-            <label for="penghulu">Nama Penghulu</label>
-            <input type="text" id="penghulu">
-          </div>
-        </div>
-        
+                 
         <div class="form-group">
           <label for="notes">Keterangan Tambahan</label>
           <textarea id="notes" rows="3"></textarea>
@@ -186,7 +180,7 @@
   </div>
 
   <footer>
-    <p>Dikembangkan oleh KUA Kecamatan - &copy; <span id="currentYear"></span></p>
+    <p>Dikembangkan oleh UDI WIJAYA - &copy; <span id="currentYear"></span></p>
   </footer>
 
   <script>
