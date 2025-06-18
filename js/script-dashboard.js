@@ -1,23 +1,28 @@
-// script-dashboard.js
-
 document.addEventListener('DOMContentLoaded', function() {
     checkLoginStatus();
     initializeDashboard();
     registerServiceWorker();
 });
 
+// Variabel global
+let scheduleData = [];
+let currentMonth = new Date().getMonth();
+let currentYear = new Date().getFullYear();
+
 function initializeDashboard() {
     displayUserInfo();
     setupEventListeners();
     loadScheduleData();
     updateCalendar();
+    showThisWeekMarriageCount(); // ← tambahan
     document.getElementById('logoutBtn').addEventListener('click', logout);
 }
 
 function displayUserInfo() {
     const userData = JSON.parse(localStorage.getItem('userData'));
     if (userData) {
-        document.getElementById('loggedInUser').textContent = `${userData.name} (${userData.role})`;
+        document.getElementById('loggedInUser').textContent = 
+            `${userData.name} (${userData.role})`;
     }
 }
 
@@ -28,52 +33,43 @@ function setupEventListeners() {
 
     addBtn.addEventListener('click', () => openModal('Tambah Jadwal Nikah'));
     closeBtn.addEventListener('click', () => modal.style.display = 'none');
+
     window.addEventListener('click', (e) => {
-        if (e.target === modal) modal.style.display = 'none';
+        if (e.target === modal) {
+            modal.style.display = 'none';
+        }
     });
 
     document.getElementById('scheduleForm').addEventListener('submit', handleFormSubmit);
-
     document.getElementById('prevMonthBtn').addEventListener('click', () => {
-        currentMonth--;
-        if (currentMonth < 0) {
-            currentMonth = 11;
-            currentYear--;
-        }
+        currentMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+        if (currentMonth === 11) currentYear--;
         updateCalendar();
-        loadScheduleData();
     });
 
     document.getElementById('nextMonthBtn').addEventListener('click', () => {
-        currentMonth++;
-        if (currentMonth > 11) {
-            currentMonth = 0;
-            currentYear++;
-        }
+        currentMonth = currentMonth === 11 ? 0 : currentMonth + 1;
+        if (currentMonth === 0) currentYear++;
         updateCalendar();
-        loadScheduleData();
     });
 
     document.getElementById('locationFilter').addEventListener('change', loadScheduleData);
+    document.getElementById('location').addEventListener('change', function() {
+        document.getElementById('locationDetailGroup').style.display = 
+            this.value === 'Lapangan' ? 'block' : 'none';
+    });
+
     document.getElementById('downloadPdfBtn').addEventListener('click', downloadAsPdf);
     document.getElementById('downloadCsvBtn').addEventListener('click', downloadAsCsv);
-
-    document.getElementById('location').addEventListener('change', function() {
-        document.getElementById('locationDetailGroup').style.display = this.value === 'Lapangan' ? 'block' : 'none';
-    });
 }
-
-let scheduleData = [];
-let currentMonth = new Date().getMonth();
-let currentYear = new Date().getFullYear();
 
 function loadScheduleData() {
     scheduleData = JSON.parse(localStorage.getItem('weddingSchedules')) || [];
-    const locationFilter = document.getElementById('locationFilter').value;
 
-    let filteredData = locationFilter !== 'all'
-        ? scheduleData.filter(item => item.location === locationFilter)
-        : scheduleData;
+    const locationFilter = document.getElementById('locationFilter').value;
+    let filteredData = locationFilter === 'all' 
+        ? scheduleData 
+        : scheduleData.filter(item => item.location === locationFilter);
 
     const firstDay = new Date(currentYear, currentMonth, 1);
     const lastDay = new Date(currentYear, currentMonth + 1, 0);
@@ -89,7 +85,6 @@ function loadScheduleData() {
 function renderScheduleTable(data) {
     const tbody = document.getElementById('scheduleTableBody');
     tbody.innerHTML = '';
-
     data.forEach((item, index) => {
         const row = document.createElement('tr');
         row.innerHTML = `
@@ -98,7 +93,7 @@ function renderScheduleTable(data) {
             <td>${item.time}</td>
             <td>${item.groomName}</td>
             <td>${item.brideName}</td>
-            <td>${item.groomPhone} / ${item.bridePhone}</td>
+            <td>${item.groomPhone}</td>
             <td>${item.location}${item.locationDetail ? ' - ' + item.locationDetail : ''}</td>
             <td>${item.documentStatus}</td>
             <td>${item.notes || '-'}</td>
@@ -120,14 +115,15 @@ function renderScheduleTable(data) {
 }
 
 function updateCalendar() {
-    const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-    document.getElementById('currentMonthYear').textContent = `${monthNames[currentMonth]} ${currentYear}`;
+    const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni",
+                        "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+    document.getElementById('currentMonthYear').textContent = 
+        `${monthNames[currentMonth]} ${currentYear}`;
 
     const firstDay = new Date(currentYear, currentMonth, 1);
     const lastDay = new Date(currentYear, currentMonth + 1, 0);
     const daysInMonth = lastDay.getDate();
     const startingDay = firstDay.getDay();
-
     const calendarBody = document.getElementById('calendarBody');
     calendarBody.innerHTML = '';
 
@@ -137,19 +133,20 @@ function updateCalendar() {
 
     for (let day = 1; day <= daysInMonth; day++) {
         const cell = document.createElement('div');
-        cell.textContent = day;
-
         const currentDate = new Date(currentYear, currentMonth, day);
         const formattedDate = formatDateForComparison(currentDate);
+        const sameDaySchedules = scheduleData.filter(item => 
+            formatDateForComparison(new Date(item.date)) === formattedDate
+        );
 
-        const hasSchedule = scheduleData.some(item => formatDateForComparison(new Date(item.date)) === formattedDate);
-
-        if (hasSchedule) {
+        if (sameDaySchedules.length > 0) {
             cell.classList.add('has-schedule');
-            cell.addEventListener('click', () => {
-                const filtered = scheduleData.filter(item => formatDateForComparison(new Date(item.date)) === formattedDate);
-                renderScheduleTable(filtered);
-            });
+            cell.style.backgroundColor = '#fff3b0';
+            cell.innerHTML = `<div class="calendar-date">${day}</div>
+                              <div class="schedule-count">${sameDaySchedules.length}</div>`;
+            cell.addEventListener('click', () => renderScheduleTable(sameDaySchedules));
+        } else {
+            cell.textContent = day;
         }
 
         calendarBody.appendChild(cell);
@@ -174,7 +171,6 @@ function openModal(title, data = null) {
         document.getElementById('locationDetail').value = data.locationDetail || '';
         document.getElementById('documentStatus').value = data.documentStatus;
         document.getElementById('notes').value = data.notes || '';
-
         deleteBtn.style.display = 'inline-block';
         deleteBtn.onclick = () => deleteSchedule(data.id);
     } else {
@@ -189,7 +185,6 @@ function openModal(title, data = null) {
 
 function handleFormSubmit(e) {
     e.preventDefault();
-
     const formData = {
         id: document.getElementById('scheduleId').value || Date.now(),
         groomName: document.getElementById('groomName').value,
@@ -199,7 +194,9 @@ function handleFormSubmit(e) {
         date: document.getElementById('weddingDate').value,
         time: document.getElementById('weddingTime').value,
         location: document.getElementById('location').value,
-        locationDetail: document.getElementById('location').value === 'Lapangan' ? document.getElementById('locationDetail').value : '',
+        locationDetail: document.getElementById('location').value === 'Lapangan' 
+            ? document.getElementById('locationDetail').value 
+            : '',
         documentStatus: document.getElementById('documentStatus').value,
         notes: document.getElementById('notes').value
     };
@@ -209,18 +206,33 @@ function handleFormSubmit(e) {
         return;
     }
 
-    let schedules = JSON.parse(localStorage.getItem('weddingSchedules')) || [];
-    if (document.getElementById('scheduleId').value) {
-        schedules = schedules.map(item => item.id == formData.id ? formData : item);
-    } else {
-        schedules.push(formData);
+    const schedules = JSON.parse(localStorage.getItem('weddingSchedules')) || [];
+
+    // Periksa konflik untuk Lapangan
+    const conflict = schedules.find(s => 
+        s.id !== formData.id &&
+        s.date === formData.date &&
+        s.location === 'Lapangan'
+    );
+
+    if (formData.location === 'Lapangan' && conflict) {
+        showNotification('Peringatan', { body: 'Sudah ada jadwal di Lapangan pada tanggal tersebut!', type: 'warning' });
+        return;
     }
 
-    localStorage.setItem('weddingSchedules', JSON.stringify(schedules));
+    const updatedSchedules = document.getElementById('scheduleId').value
+        ? schedules.map(item => item.id == formData.id ? formData : item)
+        : [...schedules, formData];
+
+    localStorage.setItem('weddingSchedules', JSON.stringify(updatedSchedules));
+
     loadScheduleData();
     updateCalendar();
     document.getElementById('scheduleModal').style.display = 'none';
-    showNotification('Sukses', { body: `Jadwal nikah ${formData.groomName} & ${formData.brideName} berhasil disimpan`, type: 'success' });
+    showNotification('Sukses', { 
+        body: `Jadwal nikah ${formData.groomName} & ${formData.brideName} berhasil disimpan`, 
+        type: 'success' 
+    });
 }
 
 function editSchedule(id) {
@@ -253,33 +265,20 @@ function downloadAsPdf() {
 }
 
 function downloadAsCsv() {
-    const rows = [];
-    const headers = ['No.', 'Tanggal', 'Waktu', 'Pria', 'Wanita', 'Kontak', 'Lokasi', 'Status Berkas', 'Keterangan'];
-    rows.push(headers.join(','));
-
-    scheduleData.forEach((item, index) => {
-        const row = [
-            index + 1,
-            formatDate(item.date),
-            item.time,
-            `"${item.groomName}"`,
-            `"${item.brideName}"`,
-            `${item.groomPhone} / ${item.bridePhone}`,
-            `"${item.location}${item.locationDetail ? ' - ' + item.locationDetail : ''}"`,
-            item.documentStatus,
-            `"${item.notes || ''}"`
-        ];
-        rows.push(row.join(','));
+    const rows = [['Tanggal', 'Waktu', 'Pria', 'Wanita', 'HP', 'Lokasi', 'Status Berkas', 'Keterangan']];
+    scheduleData.forEach(item => {
+        rows.push([
+            formatDate(item.date), item.time, `"${item.groomName}"`, `"${item.brideName}"`,
+            item.groomPhone, `"${item.location}${item.locationDetail ? ' - ' + item.locationDetail : ''}"`,
+            item.documentStatus, `"${item.notes || ''}"`
+        ]);
     });
-
-    const csvContent = rows.join('\n');
+    const csvContent = rows.map(e => e.join(',')).join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
-
     const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', `jadwal-nikah-${currentMonth + 1}-${currentYear}.csv`);
-    link.style.visibility = 'hidden';
+    link.href = url;
+    link.download = `jadwal-nikah-${currentMonth + 1}-${currentYear}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -291,15 +290,6 @@ function logout() {
     window.location.href = 'login.html';
 }
 
-function formatDate(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
-}
-
-function formatDateForComparison(date) {
-    return date.toISOString().split('T')[0];
-}
-
 function checkLoginStatus() {
     const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
     if (!isLoggedIn) window.location.href = 'login.html';
@@ -308,10 +298,10 @@ function checkLoginStatus() {
 function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js')
-            .then(registration => {
+            .then(reg => {
                 console.log('ServiceWorker registered');
-                registration.addEventListener('updatefound', () => {
-                    const newWorker = registration.installing;
+                reg.addEventListener('updatefound', () => {
+                    const newWorker = reg.installing;
                     newWorker.addEventListener('statechange', () => {
                         if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                             showUpdateNotification();
@@ -319,11 +309,8 @@ function registerServiceWorker() {
                     });
                 });
             })
-            .catch(err => console.log('ServiceWorker registration failed:', err));
-
-        navigator.serviceWorker.addEventListener('controllerchange', () => {
-            window.location.reload();
-        });
+            .catch(err => console.log('SW registration failed:', err));
+        navigator.serviceWorker.addEventListener('controllerchange', () => window.location.reload());
     }
 }
 
@@ -336,7 +323,35 @@ function showNotification(title, options = {}) {
 }
 
 function showUpdateNotification() {
-    if (confirm('Versi baru tersedia! Muat ulang sekarang untuk mendapatkan fitur terbaru?')) {
-        window.location.reload();
+    if (confirm('Versi baru tersedia! Muat ulang sekarang?')) window.location.reload();
+}
+
+function formatDate(dateString) {
+    return new Date(dateString).toLocaleDateString('id-ID', {
+        day: '2-digit', month: '2-digit', year: 'numeric'
+    }).replace(/\//g, '-');
+}
+
+function formatDateForComparison(date) {
+    return date.toISOString().split('T')[0];
+}
+
+function showThisWeekMarriageCount() {
+    const today = new Date();
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - today.getDay());
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+
+    const count = scheduleData.filter(item => {
+        const date = new Date(item.date);
+        return date >= startOfWeek && date <= endOfWeek;
+    }).length;
+
+    if (count > 0) {
+        showNotification('Info', {
+            body: `Ada ${count} pernikahan minggu ini.`,
+            type: 'info'
+        });
     }
 }
