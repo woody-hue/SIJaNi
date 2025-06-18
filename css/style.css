@@ -1,0 +1,37 @@
+:root {
+  --primary: #4f46e5;
+  --primary-dark: #4338ca;
+  --text: #1e293b;
+  --text-light: #64748b;
+  --bg: #f8fafc;
+}
+
+/* Login Page */
+.login-page {
+  background: url('../images/bg-desktop.webp') no-repeat center/cover;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+}
+
+.login-container {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 2rem;
+  border-radius: 1rem;
+  width: 90%;
+  max-width: 400px;
+}
+
+/* Dashboard */
+.dashboard-grid {
+  display: grid;
+  gap: 1.5rem;
+  padding: 1rem;
+}
+
+.card {
+  background: white;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}

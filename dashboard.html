@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIJaNi - Dashboard</title>
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body class="dashboard-page">
+  <header class="dashboard-header">
+    <h1>Dashboard SIJaNi</h1>
+    <button id="logoutBtn">Keluar</button>
+  </header>
+
+  <main class="dashboard-grid">
+    <!-- Grafik Bulanan -->
+    <section class="card chart-section">
+      <h2>Statistik Pernikahan</h2>
+      <canvas id="marriageChart"></canvas>
+    </section>
+
+    <!-- Jadwal Hari Ini -->
+    <section class="card schedule-section">
+      <div class="section-header">
+        <h2>Jadwal Hari Ini</h2>
+        <button id="refreshBtn">⟳</button>
+      </div>
+      <div id="todaySchedule" class="schedule-list"></div>
+    </section>
+
+    <!-- Form Tambah Jadwal -->
+    <section class="card form-section">
+      <h2>Tambah Jadwal Baru</h2>
+      <form id="scheduleForm">
+        <!-- Form fields sesuai kebutuhan -->
+        <button type="submit" class="primary-btn">Simpan</button>
+      </form>
+    </section>
+  </main>
+
+  <script src="./js/script.js" type="module"></script>
+</body>
+</html>

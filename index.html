@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIJaNi - Login</title>
+  <link rel="stylesheet" href="./css/style.css">
+  <link rel="manifest" href="./manifest.json">
+</head>
+<body class="login-page">
+  <div class="login-container">
+    <div class="login-header">
+      <h1>SIJaNi</h1>
+      <p>Sistem Informasi Jadwal Nikah KUA Belitang Hilir</p>
+    </div>
+    
+    <form id="loginForm" class="login-form">
+      <div class="input-group">
+        <input type="text" id="username" required placeholder=" ">
+        <label for="username">Username</label>
+      </div>
+      
+      <div class="input-group">
+        <input type="password" id="password" required placeholder=" ">
+        <label for="password">Password</label>
+      </div>
+      
+      <button type="submit" class="login-btn">
+        <span>Masuk</span>
+        <svg width="20" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+    </form>
+  </div>
+
+  <script src="./js/script.js" type="module"></script>
+</body>
+</html>
