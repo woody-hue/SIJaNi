@@ -75,10 +75,7 @@ function setupEventListeners() {
   });
 
   document.getElementById('locationFilter').addEventListener('change', loadScheduleData);
-  document.getElementById('downloadPdfBtn').addEventListener('click', downloadAsPdf);
-  document.getElementById('downloadCsvBtn').addEventListener('click', downloadAsCsv);
-
-  document.getElementById('location').addEventListener('change', function () {
+    document.getElementById('location').addEventListener('change', function () {
     document.getElementById('locationDetailGroup').style.display = this.value === 'Lapangan' ? 'block' : 'none';
   });
 }
