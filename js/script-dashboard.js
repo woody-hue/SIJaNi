@@ -65,9 +65,6 @@ function setupEventListeners() {
     });
   }
 
-    updateCalendar();
-  });
-
   document.getElementById('nextMonthBtn').addEventListener('click', () => {
     currentMonth++;
     if (currentMonth > 11) {
