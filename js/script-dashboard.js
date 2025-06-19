@@ -65,7 +65,7 @@ function loadScheduleData() {
 
   let filtered = scheduleData.filter(item => {
     const [year, month, day] = item.date.split('-').map(Number);
-    const itemDate = new Date(year, month - 1, day);
+    const itemDate = new Date(item.date + 'T00:00:00');
     const firstDay = new Date(currentYear, currentMonth, 1);
     const lastDay = new Date(currentYear, currentMonth + 1, 0);
     return itemDate >= firstDay && itemDate <= lastDay;
@@ -119,9 +119,9 @@ function updateCalendar() {
   for (let day = 1; day <= lastDay; day++) {
     const cell = document.createElement('div');
     cell.textContent = day;
-    const currentDate = new Date(currentYear, currentMonth, day);
+    const currentDate = new Date(Date.UTC(currentYear, currentMonth, day));
     const formattedDate = formatDateForComparison(currentDate);
-
+    
     const matches = scheduleData.filter(item => formatDateForComparison(new Date(...item.date.split('-').map(Number))) === formattedDate);
     if (matches.length > 0) {
       cell.classList.add('has-schedule');
@@ -267,7 +267,7 @@ function formatDateForComparison(date) {
   const year = date.getFullYear();
   const month = `${date.getMonth() + 1}`.padStart(2, '0');
   const day = `${date.getDate()}`.padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  return date.toISOString().split('T')[0];
 }
 
 function showThisWeekMarriageCount() {
