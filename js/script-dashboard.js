@@ -198,6 +198,7 @@ function handleFormSubmit(e) {
     date: document.getElementById('weddingDate').value,
     time: document.getElementById('weddingTime').value,
     location: document.getElementById('location').value,
+    documentStatus: document.getElementById('documentStatus').value,
     locationDetail: document.getElementById('location').value === 'Lapangan' ? document.getElementById('locationDetail').value : '',
     notes: document.getElementById('notes').value
   };
