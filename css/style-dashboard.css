@@ -207,3 +207,17 @@ footer {
   margin-top: 2rem;
   font-size: 0.9rem;
 }
+
+#scheduleTable {
+  font-size: 12px;
+  background-color: white;
+}
+
+#scheduleTable th,
+#scheduleTable td {
+  white-space: nowrap;
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
