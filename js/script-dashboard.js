@@ -26,7 +26,7 @@ function setupEventListeners() {
   const modal = document.getElementById('scheduleModal');
   const addBtn = document.getElementById('addScheduleBtn');
   const closeBtn = document.querySelector('.close');
-
+  
   addBtn.addEventListener('click', () => openModal('Tambah Jadwal Nikah'));
   closeBtn.addEventListener('click', () => modal.style.display = 'none');
 
@@ -35,6 +35,7 @@ function setupEventListeners() {
   });
 
   document.getElementById('scheduleForm').addEventListener('submit', handleFormSubmit);
+  document.getElementById('downloadExcelBtn').addEventListener('click', downloadAsExcel);
   document.getElementById('prevMonthBtn').addEventListener('click', () => {
     currentMonth--;
     if (currentMonth < 0) {
@@ -242,74 +243,6 @@ function deleteSchedule(id) {
   }
 }
 
-function downloadAsPdf() {
-  const table = document.getElementById('scheduleTable');
-  if (!table) {
-    alert('Tabel tidak ditemukan!');
-    return;
-  }
-
-  // Clone table
-  const clonedTable = table.cloneNode(true);
-
-  // Hapus kolom aksi (kolom ke-10, index 9)
-  clonedTable.querySelectorAll('tr').forEach(row => {
-    if (row.cells.length === 10) {
-      row.deleteCell(9);
-    }
-  });
-
-  // Buat wrapper div untuk styling dan rendering
-  const wrapper = document.createElement('div');
-  wrapper.style.padding = '20px';
-  wrapper.style.fontSize = '12px';
-  wrapper.style.width = '100%';
-  wrapper.appendChild(clonedTable);
-
-  // Render dan cetak PDF
-  const opt = {
-    margin: [10, 10, 10, 10],
-    filename: `jadwal-nikah-${currentMonth + 1}-${currentYear}.pdf`,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
-  };
-
-  html2pdf().from(wrapper).set(opt).save();
-}
-
-function downloadAsCsv() {
-  const rows = [];
-  const headers = ['Tanggal', 'Waktu', 'Pria', 'Wanita', 'HP', 'Lokasi', 'Keterangan'];
-  rows.push(headers.join(','));
-
-  scheduleData.forEach(item => {
-    const row = [
-      formatDate(item.date),
-      item.time,
-      `"${item.groomName}"`,
-      `"${item.brideName}"`,
-      item.groomPhone,
-      `"${item.location}${item.locationDetail ? ' - ' + item.locationDetail : ''}"`,
-      `"${item.notes || ''}"`
-    ];
-    rows.push(row.join(','));
-  });
-
-  const csvContent = rows.join('\n');
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-
-  const link = document.createElement('a');
-  link.setAttribute('href', url);
-  link.setAttribute('download', `jadwal-nikah-${currentMonth + 1}-${currentYear}.csv`);
-  link.style.visibility = 'hidden';
-
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-}
-
 function logout() {
   localStorage.removeItem('isLoggedIn');
   localStorage.removeItem('userData');
@@ -388,3 +321,24 @@ function showThisWeekMarriageCount() {
   info.textContent = `Jumlah pernikahan minggu ini: ${count}`;
   header.appendChild(info);
 }
+
+function downloadAsExcel() {
+  const headers = ['Tanggal', 'Waktu', 'Pria', 'Wanita', 'HP', 'Lokasi', 'Status Berkas', 'Keterangan'];
+  const data = scheduleData.map(item => [
+    formatDate(item.date),
+    item.time,
+    item.groomName,
+    item.brideName,
+    item.groomPhone,
+    item.location + (item.locationDetail ? ' - ' + item.locationDetail : ''),
+    item.documentStatus || '',
+    item.notes || ''
+  ]);
+
+  const worksheet = XLSX.utils.aoa_to_sheet([headers, ...data]);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Jadwal Nikah');
+
+  XLSX.writeFile(workbook, `jadwal-nikah-${currentMonth + 1}-${currentYear}.xlsx`);
+}
+
