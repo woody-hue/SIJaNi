@@ -243,15 +243,34 @@ function deleteSchedule(id) {
 }
 
 function downloadAsPdf() {
-  const element = document.getElementById('scheduleTable');
-  const opt = {
-    margin: 10,
-    filename: `jadwal-nikah-${currentMonth + 1}-${currentYear}.pdf`,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2 },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
-  };
-  html2pdf().from(element).set(opt).save();
+    const originalTable = document.getElementById('scheduleTable');
+
+    const clonedTable = originalTable.cloneNode(true);
+
+    const headerRow = clonedTable.querySelector('thead tr');
+    if (headerRow.children.length > 9) {
+        headerRow.removeChild(headerRow.lastElementChild);
+    }
+
+    const bodyRows = clonedTable.querySelectorAll('tbody tr');
+    bodyRows.forEach(row => {
+        if (row.children.length > 9) {
+            row.removeChild(row.lastElementChild);
+        }
+    });
+
+    const container = document.createElement('div');
+    container.appendChild(clonedTable);
+
+    const opt = {
+        margin: 10,
+        filename: `jadwal-nikah-${currentMonth+1}-${currentYear}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+    };
+
+    html2pdf().from(container).set(opt).save();
 }
 
 function downloadAsCsv() {
