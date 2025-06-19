@@ -267,27 +267,6 @@ function downloadAsPdf() {
   html2pdf().from(container).set(opt).save();
 }
 
-    const bodyRows = clonedTable.querySelectorAll('tbody tr');
-    bodyRows.forEach(row => {
-        if (row.children.length > 9) {
-            row.removeChild(row.lastElementChild);
-        }
-    });
-
-    const container = document.createElement('div');
-    container.appendChild(clonedTable);
-
-    const opt = {
-        margin: 10,
-        filename: `jadwal-nikah-${currentMonth+1}-${currentYear}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
-    };
-
-    html2pdf().from(container).set(opt).save();
-}
-
 function downloadAsCsv() {
   const rows = [];
   const headers = ['Tanggal', 'Waktu', 'Pria', 'Wanita', 'HP', 'Lokasi', 'Keterangan'];
