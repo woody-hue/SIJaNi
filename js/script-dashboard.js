@@ -243,14 +243,29 @@ function deleteSchedule(id) {
 }
 
 function downloadAsPdf() {
-    const originalTable = document.getElementById('scheduleTable');
+  const originalTable = document.getElementById('scheduleTable');
+  const clonedTable = originalTable.cloneNode(true);
 
-    const clonedTable = originalTable.cloneNode(true);
-
-    const headerRow = clonedTable.querySelector('thead tr');
-    if (headerRow.children.length > 9) {
-        headerRow.removeChild(headerRow.lastElementChild);
+  // Hapus kolom aksi (kolom ke-10, index ke-9)
+  clonedTable.querySelectorAll('tr').forEach(row => {
+    if (row.cells.length >= 10) {
+      row.deleteCell(9);
     }
+  });
+
+  const container = document.createElement('div');
+  container.appendChild(clonedTable);
+
+  const opt = {
+    margin: 10,
+    filename: `jadwal-nikah-${currentMonth + 1}-${currentYear}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2 },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+  };
+
+  html2pdf().from(container).set(opt).save();
+}
 
     const bodyRows = clonedTable.querySelectorAll('tbody tr');
     bodyRows.forEach(row => {
