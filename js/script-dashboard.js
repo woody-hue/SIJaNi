@@ -243,34 +243,39 @@ function deleteSchedule(id) {
 }
 
 function downloadAsPdf() {
-  const originalTable = document.getElementById('scheduleTable');
-  if (!originalTable) {
+  const table = document.getElementById('scheduleTable');
+  if (!table) {
     alert('Tabel tidak ditemukan!');
     return;
   }
 
-  const clonedTable = originalTable.cloneNode(true);
+  // Clone table
+  const clonedTable = table.cloneNode(true);
 
-  // Hapus kolom Aksi (kolom terakhir, index ke-9 jika ada 10 kolom)
+  // Hapus kolom aksi (kolom ke-10, index 9)
   clonedTable.querySelectorAll('tr').forEach(row => {
-    if (row.cells.length >= 10) {
+    if (row.cells.length === 10) {
       row.deleteCell(9);
     }
   });
 
-  const container = document.createElement('div');
-  container.appendChild(clonedTable);
-  container.style.width = '1000px'; // opsional agar tabel tidak mepet
+  // Buat wrapper div untuk styling dan rendering
+  const wrapper = document.createElement('div');
+  wrapper.style.padding = '20px';
+  wrapper.style.fontSize = '12px';
+  wrapper.style.width = '100%';
+  wrapper.appendChild(clonedTable);
 
+  // Render dan cetak PDF
   const opt = {
-    margin: 10,
+    margin: [10, 10, 10, 10],
     filename: `jadwal-nikah-${currentMonth + 1}-${currentYear}.pdf`,
     image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2 },
+    html2canvas: { scale: 2, useCORS: true },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
   };
 
-  html2pdf().from(container).set(opt).save();
+  html2pdf().from(wrapper).set(opt).save();
 }
 
 function downloadAsCsv() {
