@@ -244,9 +244,14 @@ function deleteSchedule(id) {
 
 function downloadAsPdf() {
   const originalTable = document.getElementById('scheduleTable');
+  if (!originalTable) {
+    alert('Tabel tidak ditemukan!');
+    return;
+  }
+
   const clonedTable = originalTable.cloneNode(true);
 
-  // Hapus kolom aksi (kolom ke-10, index ke-9)
+  // Hapus kolom Aksi (kolom terakhir, index ke-9 jika ada 10 kolom)
   clonedTable.querySelectorAll('tr').forEach(row => {
     if (row.cells.length >= 10) {
       row.deleteCell(9);
@@ -255,6 +260,7 @@ function downloadAsPdf() {
 
   const container = document.createElement('div');
   container.appendChild(clonedTable);
+  container.style.width = '1000px'; // opsional agar tabel tidak mepet
 
   const opt = {
     margin: 10,
