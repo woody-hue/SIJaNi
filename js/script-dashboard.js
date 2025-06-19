@@ -30,18 +30,41 @@ function setupEventListeners() {
   addBtn.addEventListener('click', () => openModal('Tambah Jadwal Nikah'));
   closeBtn.addEventListener('click', () => modal.style.display = 'none');
 
-  window.addEventListener('click', (e) => {
+   window.addEventListener('click', (e) => {
     if (e.target === modal) modal.style.display = 'none';
   });
 
   document.getElementById('scheduleForm').addEventListener('submit', handleFormSubmit);
-  document.getElementById('downloadExcelBtn').addEventListener('click', downloadAsExcel);
-  document.getElementById('prevMonthBtn').addEventListener('click', () => {
-    currentMonth--;
-    if (currentMonth < 0) {
-      currentMonth = 11;
-      currentYear--;
-    }
+
+  const excelBtn = document.getElementById('downloadExcelBtn');
+  if (excelBtn) {
+    excelBtn.addEventListener('click', downloadAsExcel);
+  }
+
+  const prevMonthBtn = document.getElementById('prevMonthBtn');
+  if (prevMonthBtn) {
+    prevMonthBtn.addEventListener('click', () => {
+      currentMonth--;
+      if (currentMonth < 0) {
+        currentMonth = 11;
+        currentYear--;
+      }
+      updateCalendar();
+    });
+  }
+
+  const nextMonthBtn = document.getElementById('nextMonthBtn');
+  if (nextMonthBtn) {
+    nextMonthBtn.addEventListener('click', () => {
+      currentMonth++;
+      if (currentMonth > 11) {
+        currentMonth = 0;
+        currentYear++;
+      }
+      updateCalendar();
+    });
+  }
+
     updateCalendar();
   });
 
