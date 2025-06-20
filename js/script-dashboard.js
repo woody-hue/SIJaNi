@@ -106,6 +106,11 @@ function loadScheduleData() {
 
 function renderScheduleTable(data) {
     const tbody = document.getElementById('scheduleTableBody');
+  data.sort((a, b) => {
+  const dateTimeA = new Date(`${a.date}T${a.time}`);
+  const dateTimeB = new Date(`${b.date}T${b.time}`);
+  return dateTimeA - dateTimeB;
+});
     tbody.innerHTML = '';
     let count = 1;
 
@@ -341,6 +346,23 @@ function showThisWeekMarriageCount() {
 
 function downloadAsExcel() {
   const headers = ['Tanggal', 'Waktu', 'Pria', 'Wanita', 'HP', 'Lokasi', 'Status Berkas', 'Keterangan'];
+const sortedData = [...scheduleData].sort((a, b) => {
+  const dateTimeA = new Date(`${a.date}T${a.time}`);
+  const dateTimeB = new Date(`${b.date}T${b.time}`);
+  return dateTimeA - dateTimeB;
+});
+
+const data = sortedData.map(item => [
+  formatDate(item.date),
+  item.time,
+  item.groomName,
+  item.brideName,
+  item.groomPhone,
+  item.location + (item.locationDetail ? ' - ' + item.locationDetail : ''),
+  item.documentStatus || '',
+  item.notes || ''
+]);
+
   const data = scheduleData.map(item => [
     formatDate(item.date),
     item.time,
