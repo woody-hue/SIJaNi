@@ -346,24 +346,16 @@ function showThisWeekMarriageCount() {
 
 function downloadAsExcel() {
   const headers = ['Tanggal', 'Waktu', 'Pria', 'Wanita', 'HP', 'Lokasi', 'Status Berkas', 'Keterangan'];
-const sortedData = [...scheduleData].sort((a, b) => {
-  const dateTimeA = new Date(`${a.date}T${a.time}`);
-  const dateTimeB = new Date(`${b.date}T${b.time}`);
-  return dateTimeA - dateTimeB;
-});
 
-const data = sortedData.map(item => [
-  formatDate(item.date),
-  item.time,
-  item.groomName,
-  item.brideName,
-  item.groomPhone,
-  item.location + (item.locationDetail ? ' - ' + item.locationDetail : ''),
-  item.documentStatus || '',
-  item.notes || ''
-]);
+  // Sort scheduleData berdasarkan tanggal dan waktu
+  const sortedData = [...scheduleData].sort((a, b) => {
+    const dateTimeA = new Date(`${a.date}T${a.time}`);
+    const dateTimeB = new Date(`${b.date}T${b.time}`);
+    return dateTimeA - dateTimeB;
+  });
 
-  const data = scheduleData.map(item => [
+  // Pakai sortedData untuk membuat array data
+  const excelData = sortedData.map(item => [
     formatDate(item.date),
     item.time,
     item.groomName,
@@ -374,7 +366,7 @@ const data = sortedData.map(item => [
     item.notes || ''
   ]);
 
-  const worksheet = XLSX.utils.aoa_to_sheet([headers, ...data]);
+  const worksheet = XLSX.utils.aoa_to_sheet([headers, ...excelData]);
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Jadwal Nikah');
 
